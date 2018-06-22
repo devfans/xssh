@@ -15,38 +15,39 @@ import (
 
 // `host, hostname, user, bastion, category`
 var (
-	// command line args
+	// etcd store
 	pRoot     *string = flag.String("root", "/ssh", "etcd root path")
-	pEndpoint *string = flag.String("url", "", "etcd endpoint")
+	pEndpoint *string = flag.String("url", "", "store endpoint")
 
 	// host operations
-	pAdd      *bool   = flag.Bool("add", false, "add host")
-	pGet      *bool   = flag.Bool("get", false, "get host")
-	pList     *bool   = flag.Bool("list", false, "list hosts")
-	pChange   *bool   = flag.Bool("change", false, "change host")
-	pDelete   *bool   = flag.Bool("del", false, "delete host ")
+	pAdd      *bool   = flag.Bool("add", false, "add host into store")
+	pGet      *bool   = flag.Bool("get", false, "get host details from store")
+	pList     *bool   = flag.Bool("list", false, "list hosts from store")
+	pChange   *bool   = flag.Bool("change", false, "change host parameters")
+	pDelete   *bool   = flag.Bool("del", false, "delete host from store")
 	pAwsInput *bool   = flag.Bool("awsInput", false, "import from aws inventory file")
-	pSave     *bool   = flag.Bool("save", false, "save ssh config file")
-	pFile     *string = flag.String("file", "", "file")
+	pSave     *bool   = flag.Bool("save", false, "save ssh config file to disk as ~/.ssh/config")
+	pStore    *bool   = flag.Bool("s", false, "save store configuration as ~/.ssh/store")
+	pFile     *string = flag.String("file", "", "file path")
 
 	// key operations
-	pGetKey    *bool   = flag.Bool("getKey", false, "get key")
-	pListKeys  *bool   = flag.Bool("listKeys", false, "list keys")
-	pDelKey *bool   = flag.Bool("delKey", false, "delete key")
-	pPutKey    *bool   = flag.Bool("putKey", false, "put key")
-	pKey       *string = flag.String("key", "", "key dir")
-	pValue     *string = flag.String("value", "", "key value")
-	pAllKeys   *bool   = flag.Bool("allKeys", false, "get all keys")
+	pGetKey    *bool   = flag.Bool("getKey", false, "get key directory from store")
+	pListKeys  *bool   = flag.Bool("listKeys", false, "list keys from store")
+	pDelKey *bool   = flag.Bool("delKey", false, "delete key from store")
+	pPutKey    *bool   = flag.Bool("putKey", false, "put key into store")
+	pKey       *string = flag.String("key", "", "dir key in store")
+	pValue     *string = flag.String("value", "", "specifiy key's value")
+	pAllKeys   *bool   = flag.Bool("allKeys", false, "get all keys from store recursively")
 
 	// host args
-	pHost     *string = flag.String("host", "", "host")
-	pRename   *string = flag.String("rename", "", "new host name")
-	pHostname *string = flag.String("ip", "", "ip or domain name")
-	pPort     *string = flag.String("port", "22", "port")
-	pUser     *string = flag.String("user", "ubuntu", "username")
-	pBastion  *string = flag.String("bastion", "", "bastion host")
+  pHost     *string = flag.String("host", "", "host: Host in ssh/config")
+	pRename   *string = flag.String("rename", "", "new host name for changing host parameters")
+  pHostname *string = flag.String("ip", "", "ip or domain name: HostName in ssh/config")
+  pPort     *string = flag.String("port", "22", "port: Port in ssh/config")
+  pUser     *string = flag.String("user", "ubuntu", "username: User in ssh/config")
+  pBastion  *string = flag.String("bastion", "", "bastion host: used for ProxyComand in ssh/config")
 	pCategory *string = flag.String("category", "default", "category")
-	pPem      *string = flag.String("pem", "", "private key file name")
+	pPem      *string = flag.String("pem", "", "private key file name, default will be user.pem under ~/.ssh")
 )
 
 func checkError(err error) {
@@ -108,6 +109,7 @@ func NewConfig() *Config {
 }
 
 func (es *EtcdStore) init() {
+  fmt.Printf("Using etcd store:%s\n", *pEndpoint)
 	cfg := client.Config{
 		Endpoints:               []string{*pEndpoint},
 		Transport:               client.DefaultTransport,
@@ -151,7 +153,7 @@ func (h *Host) String() string {
 			" -W "+"%%"+"h:"+"%%"+"p")
 	}
 
-	return strings.Join(parts, "\n    ")
+	return fmt.Sprintf(strings.Join(parts, "\n    "))
 }
 
 // compose host key path
@@ -396,22 +398,24 @@ func checkKey() {
 
 func main() {
 	flag.Parse()
-	config := NewConfig()
-
 	// get url from ~/.ssh/store or env: XSSH_STORE_URL
 	conf := envconf.NewConfig("~/.ssh/store")
+  conf.Put("store", "etcd")
 	conf.Section = "etcd"
 	if *pEndpoint == "" {
-		*pEndpoint = conf.Get("STORE_URL", "url")
+		*pEndpoint = conf.Get("XSSH_ETCD_URL", "url")
 	}
 
 	if *pEndpoint == "" {
 		*pEndpoint = "http://localhost:2379"
 	}
 
-	fmt.Printf("store: %s\n", *pEndpoint)
+  conf.Put("url", *pEndpoint)
+	config := NewConfig()
 
-	if *pAdd {
+  if *pStore {
+    conf.Save()
+  } else if *pAdd {
 		config.AddHost()
 	} else if *pDelete {
 		config.DeleteHost()
