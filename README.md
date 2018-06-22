@@ -1,7 +1,7 @@
 # xssh
 
 [![Build Status](https://travis-ci.org/devfans/xssh.svg?branch=master)](https://travis-ci.org/devfans/xssh)
-[![Go Report Card](https://goreportcard.com/badge/github.com/devfans/xssh)](https://goreportcard.com/report/github.com/devfans/xssh)
+[![Go Report Card](https://goreportcard.com/badge/github.com/devfans/xssh)](https://goreportcard.com/report/github.com/devfans/xssh) [![Join the chat at https://gitter.im/devfans/xssh](https://badges.gitter.im/devfans/xssh.svg)](https://gitter.im/devfans/xssh?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 Small tool for sharing ssh config with your team members. Using etcd as the store, will support other stores, redis etc...
 
