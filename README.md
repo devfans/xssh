@@ -6,6 +6,23 @@
 Small tool for sharing ssh config with your team members. Using etcd as the store, will support other stores, redis etc...
 
 # Get Started
+Three ways to Provide etcd endpoint:
+
++ command arg: ```xssh -url http://etcd:2379```
+
++ environment variable: ```export XSSH_ETCD_URL=http://etcd:2379```
+
++ store config file: ~/.ssh/store
+```
+[main]
+store = etcd
+
+[etcd]
+url = http://etcd:2379
+```
+
+```xssh -s``` will save store endpoint into ~/.ssh/store
+
 xssh command line help:
 ```
   -add

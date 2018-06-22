@@ -31,21 +31,21 @@ var (
 	pFile     *string = flag.String("file", "", "file path")
 
 	// key operations
-	pGetKey    *bool   = flag.Bool("getKey", false, "get key directory from store")
-	pListKeys  *bool   = flag.Bool("listKeys", false, "list keys from store")
-	pDelKey *bool   = flag.Bool("delKey", false, "delete key from store")
-	pPutKey    *bool   = flag.Bool("putKey", false, "put key into store")
-	pKey       *string = flag.String("key", "", "dir key in store")
-	pValue     *string = flag.String("value", "", "specifiy key's value")
-	pAllKeys   *bool   = flag.Bool("allKeys", false, "get all keys from store recursively")
+	pGetKey   *bool   = flag.Bool("getKey", false, "get key directory from store")
+	pListKeys *bool   = flag.Bool("listKeys", false, "list keys from store")
+	pDelKey   *bool   = flag.Bool("delKey", false, "delete key from store")
+	pPutKey   *bool   = flag.Bool("putKey", false, "put key into store")
+	pKey      *string = flag.String("key", "", "dir key in store")
+	pValue    *string = flag.String("value", "", "specifiy key's value")
+	pAllKeys  *bool   = flag.Bool("allKeys", false, "get all keys from store recursively")
 
 	// host args
-  pHost     *string = flag.String("host", "", "host: Host in ssh/config")
+	pHost     *string = flag.String("host", "", "host: Host in ssh/config")
 	pRename   *string = flag.String("rename", "", "new host name for changing host parameters")
-  pHostname *string = flag.String("ip", "", "ip or domain name: HostName in ssh/config")
-  pPort     *string = flag.String("port", "22", "port: Port in ssh/config")
-  pUser     *string = flag.String("user", "ubuntu", "username: User in ssh/config")
-  pBastion  *string = flag.String("bastion", "", "bastion host: used for ProxyComand in ssh/config")
+	pHostname *string = flag.String("ip", "", "ip or domain name: HostName in ssh/config")
+	pPort     *string = flag.String("port", "22", "port: Port in ssh/config")
+	pUser     *string = flag.String("user", "ubuntu", "username: User in ssh/config")
+	pBastion  *string = flag.String("bastion", "", "bastion host: used for ProxyComand in ssh/config")
 	pCategory *string = flag.String("category", "default", "category")
 	pPem      *string = flag.String("pem", "", "private key file name, default will be user.pem under ~/.ssh")
 )
@@ -71,7 +71,7 @@ type Store interface {
 	ListKeys(recursive bool)
 	AllKeys()
 	PutKey(key, value string) error
-  CollectKeys() [][]byte
+	CollectKeys() [][]byte
 }
 
 // etcd store implementation
@@ -109,7 +109,7 @@ func NewConfig() *Config {
 }
 
 func (es *EtcdStore) init() {
-  fmt.Printf("Using etcd store:%s\n", *pEndpoint)
+	fmt.Printf("Using etcd store:%s\n", *pEndpoint)
 	cfg := client.Config{
 		Endpoints:               []string{*pEndpoint},
 		Transport:               client.DefaultTransport,
@@ -184,7 +184,7 @@ func (es *EtcdStore) GetKey(key string) (string, error) {
 // get all keys from etcd store
 func (es *EtcdStore) AllKeys() {
 	resp, err := es.client.Get(context.Background(), *pKey,
-    &client.GetOptions{Recursive: true})
+		&client.GetOptions{Recursive: true})
 	checkError(err)
 
 	jsonData, err := json.Marshal(resp)
@@ -219,15 +219,15 @@ func (es *EtcdStore) DelKey(key string) error {
 
 // collect host keys from store
 func (es *EtcdStore) CollectKeys() [][]byte {
-  keys := make([][]byte, 0)
-  *pKey = "/ssh"
-  resp, err := es.client.Get(context.Background(), *pKey,
+	keys := make([][]byte, 0)
+	*pKey = "/ssh"
+	resp, err := es.client.Get(context.Background(), *pKey,
 		&client.GetOptions{Recursive: true})
 
 	checkError(err)
 	for _, node := range resp.Node.Nodes {
 		for _, cnode := range node.Nodes {
-      keys = append(keys, []byte(cnode.Value))
+			keys = append(keys, []byte(cnode.Value))
 		}
 	}
 	return keys
@@ -236,13 +236,13 @@ func (es *EtcdStore) CollectKeys() [][]byte {
 // collect hosts from store
 func (c *Config) CollectHosts() []Host {
 	var hosts []Host
-  keys := c.store.CollectKeys()
-  for _, key := range keys {
-    host := Host{}
-    err := json.Unmarshal(key, &host)
-    checkError(err)
-    hosts = append(hosts, host)
-  }
+	keys := c.store.CollectKeys()
+	for _, key := range keys {
+		host := Host{}
+		err := json.Unmarshal(key, &host)
+		checkError(err)
+		hosts = append(hosts, host)
+	}
 	return hosts
 }
 
@@ -400,7 +400,7 @@ func main() {
 	flag.Parse()
 	// get url from ~/.ssh/store or env: XSSH_STORE_URL
 	conf := envconf.NewConfig("~/.ssh/store")
-  conf.Put("store", "etcd")
+	conf.Put("store", "etcd")
 	conf.Section = "etcd"
 	if *pEndpoint == "" {
 		*pEndpoint = conf.Get("XSSH_ETCD_URL", "url")
@@ -410,12 +410,12 @@ func main() {
 		*pEndpoint = "http://localhost:2379"
 	}
 
-  conf.Put("url", *pEndpoint)
+	conf.Put("url", *pEndpoint)
 	config := NewConfig()
 
-  if *pStore {
-    conf.Save()
-  } else if *pAdd {
+	if *pStore {
+		conf.Save()
+	} else if *pAdd {
 		config.AddHost()
 	} else if *pDelete {
 		config.DeleteHost()
