@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
-  "log"
+	"log"
 	"github.com/coreos/etcd/client"
 	"golang.org/x/net/context"
 	"github.com/devfans/envconf"
