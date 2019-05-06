@@ -80,6 +80,11 @@ xssh command line help:
 
 Examples:
 
++ Save store configurations to ~/.ssh/store
+```
+xssh -url http://etcd:2379 -s
+```
+
 + List all hosts in store
 ```
 xssh -list
@@ -90,16 +95,9 @@ xssh -list
 xssh -add -host app01 -ip 10.0.0.10 -user ubuntu -bastion bastion-server
 ```
 
-+ Delete a host
-
 + Save as local ssh config file (Automatically backup your old config files)
 ```
 xssh -save
-```
-
-+ Save store configurations to ~/.ssh/store
-```
-xssh -s
 ```
 
 
