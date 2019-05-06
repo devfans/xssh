@@ -261,11 +261,19 @@ func (c *Config) Save() {
 	configDir, err := filepath.Abs(os.Getenv("HOME") + "/.ssh/config")
 	checkError(err)
 
-	_, err = os.Stat(configDir)
-	checkError(err)
+  // make sure dir exists
+	dir := filepath.Dir(configDir)
+	if _, err = os.Stat(dir); err != nil {
+		os.MkdirAll(dir, os.ModePerm)
+	}
 
-	err = os.Rename(configDir, configDir+string(time.Now().Format(time.RFC3339)))
-	checkError(err)
+	// backup old dir
+	if _, err = os.Stat(configDir); err == nil {
+		err = os.Rename(configDir, configDir+string(time.Now().Format(time.RFC3339)))
+		if err != nil {
+			log.Fatalf("Failed to rename old config file %v.\n", configDir)
+		}
+	}
 
 	f, err := os.OpenFile(configDir, os.O_RDWR|os.O_CREATE, 0755)
 	checkError(err)
