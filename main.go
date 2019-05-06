@@ -4,13 +4,14 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"github.com/coreos/etcd/client"
-	"github.com/devfans/envconf"
-	"golang.org/x/net/context"
 	"os"
 	"path/filepath"
 	"strings"
 	"time"
+  "log"
+	"github.com/coreos/etcd/client"
+	"golang.org/x/net/context"
+	"github.com/devfans/envconf"
 )
 
 // `host, hostname, user, bastion, category`
@@ -52,14 +53,14 @@ var (
 
 func checkError(err error) {
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 }
 
 func checkFatal(err error, tpl string, args ...interface{}) {
 	if err != nil {
 		fmt.Printf(tpl, args...)
-		panic(err)
+		log.Fatal(err)
 	}
 }
 
@@ -282,7 +283,7 @@ func (c *Config) Save() {
 // import host from aws inventory file
 func (c *Config) AwsImport() {
 	if len(*pFile) == 0 {
-		panic("Please specify the file!")
+		log.Fatalln("Please specify the file!")
 	}
 	fileDir, err := filepath.Abs(*pFile)
 	checkError(err)
@@ -301,7 +302,7 @@ func (c *Config) AwsImport() {
 	items := meta["hostvars"].(map[string]interface{})
 	for k, v := range items {
 		_ = v.(map[string]interface{})
-		fmt.Printf("adding %v\n", k)
+		fmt.Printf("Adding %v\n", k)
 		h := Host{Host: k, Ip: k, User: *pUser, Port: *pPort, Bastion: *pBastion, Category: *pCategory}
 		h.GetDir()
 		jsonData, err := json.Marshal(h)
@@ -314,7 +315,7 @@ func (c *Config) AwsImport() {
 // add host into store
 func (c *Config) AddHost() {
 	if len(*pHost) == 0 {
-		panic("HostName is missing!")
+		log.Fatalln("HostName is missing!")
 	}
 
 	h := Host{Host: *pHost, Ip: *pHostname, Port: *pPort,
@@ -330,7 +331,7 @@ func (c *Config) AddHost() {
 // get host from store
 func (c *Config) GetHost() {
 	if len(*pHost) == 0 {
-		panic("HostName is missing!")
+		log.Fatalln("HostName is missing!")
 	}
 	h := Host{Host: *pHost, Category: *pCategory}
 	h.Get(c.store)
@@ -340,7 +341,7 @@ func (c *Config) GetHost() {
 // change host config
 func (c *Config) ChangeHost() {
 	if len(*pHost) == 0 {
-		panic("HostName is missing!")
+		log.Fatalln("HostName is missing!")
 	}
 	h := Host{Host: *pHost, Category: *pCategory}
 	h.Get(c.store)
@@ -383,7 +384,7 @@ func (c *Config) ChangeHost() {
 // delete host
 func (c *Config) DeleteHost() {
 	if len(*pHost) == 0 {
-		panic("HostName is missing!")
+		log.Fatalln("HostName is missing!")
 	}
 	h := Host{Host: *pHost, Category: *pCategory}
 	h.Del(c.store)
@@ -392,7 +393,7 @@ func (c *Config) DeleteHost() {
 
 func checkKey() {
 	if len(*pKey) == 0 {
-		panic(fmt.Sprintf("invalid key %v", *pKey))
+		log.Fatalln(fmt.Sprintf("Invalid key %v", *pKey))
 	}
 }
 
@@ -433,12 +434,12 @@ func main() {
 		checkKey()
 		v, err := config.store.GetKey(*pKey)
 		checkError(err)
-		fmt.Printf("value is: %v\n", v)
+		fmt.Printf("Value is: %v\n", v)
 	} else if *pPutKey {
 		checkKey()
 		err := config.store.PutKey(*pKey, *pValue)
 		checkError(err)
-		fmt.Printf("key %v is now set as %v\n", *pKey, *pValue)
+		fmt.Printf("Key %v is now set as %v\n", *pKey, *pValue)
 	} else if *pListKeys {
 		checkKey()
 		config.store.ListKeys(false)
@@ -446,10 +447,10 @@ func main() {
 		checkKey()
 		err := config.store.DelKey(*pKey)
 		checkError(err)
-		fmt.Printf("key %v is removed\n", *pKey)
+		fmt.Printf("Key %v is removed\n", *pKey)
 	} else if *pAwsInput {
 		config.AwsImport()
 	} else {
-		panic("Invalid parameters set!")
+		log.Fatalln("Invalid parameters set!")
 	}
 }
